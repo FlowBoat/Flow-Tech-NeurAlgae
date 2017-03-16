@@ -1,4 +1,7 @@
-#NeurAlgae: Describes and trains a neural network for the analysis and prediction of algal bloom data
+# FlowTech | NeurAlgae
+## 2017 WWSEF Science Fair | HAB Prediction Using Machine Learning Algorithms
+
+#Describes and trains a neural network for the analysis and prediction of algal bloom data
 #Copyright (C) 2017 AH Zachary Trefler and Atif Mahmud
 
 #This program is free software: you can redistribute it and/or modify
@@ -15,7 +18,7 @@
 #along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #If you have comments, questions, concerns, or you just want to say 'hi',
-#email Zachary Trefler at zmct99@gmail.com or Atif Mahmud at atif.mahmud@gmail.com
+#email Zachary Trefler at zmct99@gmail.com or Atif Mahmud at atifmahmud101@gmail.com
 
 import numpy as np
 import random
