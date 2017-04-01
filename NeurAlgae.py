@@ -1,9 +1,31 @@
+# FlowTech | NeurAlgae
+## 2017 WWSEF Science Fair | HAB Prediction Using Machine Learning Algorithms
+
+#Describes and trains a neural network for the analysis and prediction of algal bloom data
+#Copyright (C) 2017 AH Zachary Trefler and Atif Mahmud
+
+#This program is free software: you can redistribute it and/or modify
+#it under the terms of the GNU General Public License as published by
+#the Free Software Foundation, either version 3 of the License, or
+#(at your option) any later version.
+
+#This program is distributed in the hope that it will be useful,
+#but WITHOUT ANY WARRANTY; without even the implied warranty of
+#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#GNU General Public License for more details.
+
+#You should have received a copy of the GNU General Public License
+#along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+#If you have comments, questions, concerns, or you just want to say 'hi',
+#email Zachary Trefler at zmct99@gmail.com or Atif Mahmud at atifmahmud101@gmail.com
+
 import json
 import random
 import sys
 import numpy as np
-import scipy as sp
-import tensorflow as tf
+#import scipy as sp
+#import tensorflow as tf
 class CrossEntropy(object):
     @staticmethod
     def fn(a, y):
@@ -47,14 +69,9 @@ class NeuralNet(object):
         for i in range(2, self.nLayers):
             z = zs[-i]
             sp = self.sigmoidPrime(z)
-            print(self.weights)
-            print(i)
-            print(self.weights[0])
-            print(self.weights[1])
-            print(self.weights[i])
-            delta = np.dot(np.transpose(self.weights[i + 1]), delta) * sp
+            delta = np.dot(np.transpose(self.weights[-i + 1]), delta) * sp
             delw[-i] = np.dot(delta, np.transpose(activations[-i - 1]))
-            delb = delta
+            delb[-i] = delta
         return (delw, delb)
     def updateMinBat(self, minBat, learnRate, lmda, n):
         #Do gradient descent using backprop to a single mini-batch
@@ -64,14 +81,15 @@ class NeuralNet(object):
             deltadelw, deltadelb = self.backprop(x, y)
             delw = [dw + ddw for dw, ddw in zip(delw, deltadelw)]
             delb = [db + ddb for db, ddb in zip(delb, deltadelb)]
-        self.weights = [(1 - learnRate * (lmda / n)) * w - (learnRate / len(minBat)) * dw for w, ddw in zip(self.weights, delw)] 
-        self.biases = [b - (learnRate / len(miniBat)) * db for b, db in zip(self.biases, delb)]
+        self.weights = [(1 - learnRate * (lmda / n)) * w - (learnRate / len(minBat)) * dw for w, dw in zip(self.weights, delw)] 
+        self.biases = [b - (learnRate / len(minBat)) * db for b, db in zip(self.biases, delb)]
     def totalCost(self, data, lmda):
         #Sum the cost of passing a dataset forward
         cost = 0.0
         for x, y in data:
             a = self.forward(x)
-            cost += self.cost.fn(a, y) / len(data)
+            #cost += self.cost.fn(a, y) / len(data)
+            cost += CrossEntropy.fn(a, y) / len(data)
         cost += 0.5 * (lmda / len(data)) * sum(np.linalg.norm(w) ** 2 for w in self.weights)
         return cost
     def stochGradDescent(self, train, epochs, minBatSize, learnRate, lmda = 0.0, test = None, monitorTrain = False, monitorTest = False):
@@ -79,14 +97,15 @@ class NeuralNet(object):
         n = len(train)
         if test: nTest = len(test)
         trainCost, testCost = [], []
+        train2 = train
         for i in range(epochs):
-            random.shuffle(train)
-            minBats = [train[j:j + minBatSize] for j in range(0, n, minBatSize)]
+            random.shuffle(train2)
+            minBats = [train2[j:j + minBatSize] for j in range(0, n, minBatSize)]
             for minBat in minBats:
-                self.updateMinBat(minBat, learnRate, lmda, len(train))
-            print("Epoch %s training complete" % i)
+                self.updateMinBat(minBat, learnRate, lmda, len(train2))
+            print("Epoch %s: training complete" % i)
             if monitorTrain:
-                cost = self.totalCost(train, lmda)
+                cost = self.totalCost(train2, lmda)
                 trainCost.append(cost)
                 print("Cost with training data: {}".format(cost))
             if monitorTest:
@@ -94,7 +113,7 @@ class NeuralNet(object):
                 testCost.append(cost)
                 print("Cost with testing data: {}".format(cost))
             print
-        return trainCost, trainAccuracy, testCost, testAccuracy
+        return trainCost, testCost
     def save(self, filename):
         data = {"sizes": self.sizes,
                 "weights": [w.tolist() for w in self.weights],
