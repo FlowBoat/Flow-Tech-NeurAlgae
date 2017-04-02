@@ -33,6 +33,7 @@ class NeuralNet(object):
         self.sizes = sizes
         self.weights = [np.random.randn(y, x) / np.sqrt(x) for x, y in zip(self.sizes[:-1], self.sizes[1:])]
         self.biases = [np.random.randn(y, 1) for y in sizes[1:]]
+        self.trainCost, self.testCost = [], []
     def sigmoid(self, z):
         #Sigmoid neuron activation function
         return 1 / (1 + np.exp(-z))
@@ -45,8 +46,10 @@ class NeuralNet(object):
             a = self.sigmoid(np.dot(w, a) + b)
         return a
     def costfn(self, a, y):
+        #Implement cross-entropy cost function
         return np.sum(np.nan_to_num(-y * np.log(a) - (1 - y) * np.log(1 - a)))
     def deltaCost(self, z, a, y):
+        #Simple difference between activation and expected output
         return (a - y)
     def totalCost(self, data, lmda):
         #Sum the cost of passing a dataset forward
@@ -88,6 +91,9 @@ class NeuralNet(object):
             delb = [db + ddb for db, ddb in zip(delb, deltadelb)]
         self.weights = [(1 - learnRate * (lmda / n)) * w - (learnRate / len(minBat)) * dw for w, dw in zip(self.weights, delw)] 
         self.biases = [b - (learnRate / len(minBat)) * db for b, db in zip(self.biases, delb)]
+    def remindSGD(self):
+        #Remind forgetful programmers how to train network
+        print ("<network>.stochGradDescent(self, train, epochs, minBatSize, learnRate, lmda = 0.0, test = None, monitorTrain = False, monitorTest = False)")
     def stochGradDescent(self, train, epochs, minBatSize, learnRate, lmda = 0.0, test = None, monitorTrain = False, monitorTest = False):
         #Apply gradient descent
         n = len(train)
@@ -109,11 +115,15 @@ class NeuralNet(object):
                 testCost.append(cost)
                 print("Cost with testing data: {}".format(cost))
             print
+        self.trainCost += trainCost
+        self.testCost += testCost
         return trainCost, testCost
     def save(self, filename):
         data = {"sizes": self.sizes,
                 "weights": [w.tolist() for w in self.weights],
-                "biases": [b.tolist() for b in self.biases]}
+                "biases": [b.tolist() for b in self.biases],
+                "trainCost": self.trainCost,
+                "testCost": self.testCost}
         f = open(filename, "w")
         json.dump(data, f)
         f.close()
@@ -124,4 +134,6 @@ def load(filename):
     net = NeuralNet(data["sizes"])
     net.weights = [np.array(w) for w in data["weights"]]
     net.biases = [np.array(b) for b in data["biases"]]
+    net.trainCost = data["trainCost"]
+    net.testCost = data["testCost"]
     return net
