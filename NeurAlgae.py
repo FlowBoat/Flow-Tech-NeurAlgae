@@ -24,8 +24,21 @@ import json
 import random
 import sys
 import numpy as np
+#import pandas as pd
 #import scipy as sp
 #import tensorflow as tf
+'''class dataCollect(object):
+    def __init__(self, depth, filename):
+        self.depth = depth #number of data points
+        self.filename = filename
+        data = np.zeroes((depth, 2), dtype=object)
+
+        for i in range(depth):
+            data[i][0] = [] #list of the 10 inputs
+            data[i][1] = [] #list of the 3 outputs'''
+
+#For a network with inputs <a> through <c>, outputs <a> through <b>, and <n> data points
+#Input data in the form [(np.array([[xa1], [xb1], [xc1]]), np.array([[ya1], [yb1]])), (np.array([[xa2], [xb2], [xc2]]), np.array([[ya2], [yb2]])), ... (np.array([[xan], [xbn], [xcn]]), np.array([[yan], [ybn]]))]
 class CrossEntropy(object):
     @staticmethod
     def fn(a, y):
@@ -117,8 +130,8 @@ class NeuralNet(object):
     def save(self, filename):
         data = {"sizes": self.sizes,
                 "weights": [w.tolist() for w in self.weights],
-                "biases": [b.tolist() for b in self.biases],
-                "cost": str(self.cost.__name__)}
+                "biases": [b.tolist() for b in self.biases]}
+                #"cost": str(self.cost.__name__)}
         f = open(filename, "w")
         json.dump(data, f)
         f.close()
@@ -126,8 +139,8 @@ def load(filename):
     f = open(filename, "r")
     data = json.load(f)
     f.close()
-    cost = getattr(sys.modules[__name__], data["cost"])
-    net = Network(data["sizes"], cost = cost)
+    #cost = getattr(sys.modules[__name__], data["cost"])
+    net = NeuralNet(data["sizes"]) #, cost = cost)
     net.weights = [np.array(w) for w in data["weights"]]
     net.biases = [np.array(b) for b in data["biases"]]
     return net
