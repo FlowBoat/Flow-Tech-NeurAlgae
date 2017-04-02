@@ -24,28 +24,8 @@ import json
 import random
 import sys
 import numpy as np
-#import pandas as pd
-#import scipy as sp
-#import tensorflow as tf
-'''class dataCollect(object):
-    def __init__(self, depth, filename):
-        self.depth = depth #number of data points
-        self.filename = filename
-        data = np.zeroes((depth, 2), dtype=object)
-
-        for i in range(depth):
-            data[i][0] = [] #list of the 10 inputs
-            data[i][1] = [] #list of the 3 outputs'''
-
 #For a network with inputs <a> through <c>, outputs <a> through <b>, and <n> data points
 #Input data in the form [(np.array([[xa1], [xb1], [xc1]]), np.array([[ya1], [yb1]])), (np.array([[xa2], [xb2], [xc2]]), np.array([[ya2], [yb2]])), ... (np.array([[xan], [xbn], [xcn]]), np.array([[yan], [ybn]]))]
-class CrossEntropy(object):
-    @staticmethod
-    def fn(a, y):
-        return np.sum(np.nan_to_num(-y * np.log(a) - (1 - y) * np.log(1 - a)))
-    @staticmethod
-    def delta(z, a, y):
-        return (a - y)
 class NeuralNet(object):
     def __init__(self, sizes):
         #Initialize everything
@@ -64,6 +44,18 @@ class NeuralNet(object):
         for w, b in zip(self.weights, self.biases):
             a = self.sigmoid(np.dot(w, a) + b)
         return a
+    def costfn(self, a, y):
+        return np.sum(np.nan_to_num(-y * np.log(a) - (1 - y) * np.log(1 - a)))
+    def deltaCost(self, z, a, y):
+        return (a - y)
+    def totalCost(self, data, lmda):
+        #Sum the cost of passing a dataset forward
+        cost = 0.0
+        for x, y in data:
+            a = self.forward(x)
+            cost += self.costfn(a, y) / len(data)
+        cost += 0.5 * (lmda / len(data)) * sum(np.linalg.norm(w) ** 2 for w in self.weights)
+        return cost
     def backprop(self, x, y):
         #Compute gradient of the cost function
         delw = [np.zeros(w.shape) for w in self.weights]
@@ -76,7 +68,7 @@ class NeuralNet(object):
             zs.append(z)
             activation = self.sigmoid(z)
             activations.append(activation)
-        delta = CrossEntropy.delta(zs[-1], activations[-1], y)
+        delta = self.deltaCost(zs[-1], activations[-1], y)
         delw[-1] = np.dot(delta, np.transpose(activations[-2]))
         delb[-1] = delta
         for i in range(2, self.nLayers):
@@ -96,15 +88,6 @@ class NeuralNet(object):
             delb = [db + ddb for db, ddb in zip(delb, deltadelb)]
         self.weights = [(1 - learnRate * (lmda / n)) * w - (learnRate / len(minBat)) * dw for w, dw in zip(self.weights, delw)] 
         self.biases = [b - (learnRate / len(minBat)) * db for b, db in zip(self.biases, delb)]
-    def totalCost(self, data, lmda):
-        #Sum the cost of passing a dataset forward
-        cost = 0.0
-        for x, y in data:
-            a = self.forward(x)
-            #cost += self.cost.fn(a, y) / len(data)
-            cost += CrossEntropy.fn(a, y) / len(data)
-        cost += 0.5 * (lmda / len(data)) * sum(np.linalg.norm(w) ** 2 for w in self.weights)
-        return cost
     def stochGradDescent(self, train, epochs, minBatSize, learnRate, lmda = 0.0, test = None, monitorTrain = False, monitorTest = False):
         #Apply gradient descent
         n = len(train)
@@ -131,7 +114,6 @@ class NeuralNet(object):
         data = {"sizes": self.sizes,
                 "weights": [w.tolist() for w in self.weights],
                 "biases": [b.tolist() for b in self.biases]}
-                #"cost": str(self.cost.__name__)}
         f = open(filename, "w")
         json.dump(data, f)
         f.close()
@@ -139,8 +121,7 @@ def load(filename):
     f = open(filename, "r")
     data = json.load(f)
     f.close()
-    #cost = getattr(sys.modules[__name__], data["cost"])
-    net = NeuralNet(data["sizes"]) #, cost = cost)
+    net = NeuralNet(data["sizes"])
     net.weights = [np.array(w) for w in data["weights"]]
     net.biases = [np.array(b) for b in data["biases"]]
     return net
