@@ -23,6 +23,7 @@
 import json
 import random
 import sys
+import time
 import numpy as np
 #For a network with inputs <a> through <c>, outputs <a> through <b>, and <n> data points
 #Input data in the form [(np.array([[xa1], [xb1], [xc1]]), np.array([[ya1], [yb1]])), (np.array([[xa2], [xb2], [xc2]]), np.array([[ya2], [yb2]])), ... (np.array([[xan], [xbn], [xcn]]), np.array([[yan], [ybn]]))]
@@ -34,6 +35,7 @@ class NeuralNet(object):
         self.weights = [np.random.randn(y, x) / np.sqrt(x) for x, y in zip(self.sizes[:-1], self.sizes[1:])]
         self.biases = [np.random.randn(y, 1) for y in sizes[1:]]
         self.trainCost, self.testCost = [], []
+        self.trainDelta, self.testDelta = [], []
     def sigmoid(self, z):
         #Sigmoid neuron activation function
         return 1 / (1 + np.exp(-z))
@@ -59,6 +61,14 @@ class NeuralNet(object):
             cost += self.costfn(a, y) / len(data)
         cost += 0.5 * (lmda / len(data)) * sum(np.linalg.norm(w) ** 2 for w in self.weights)
         return cost
+    def totalDelta(self, data):
+        #Sum the absolute error of passing a dataset forward
+        delta = 0.0
+        for x, y in data:
+            a = self.forward(x)
+            delta += (a - y)
+        delta = delta / len(data)
+        return delta
     def backprop(self, x, y):
         #Compute gradient of the cost function
         delw = [np.zeros(w.shape) for w in self.weights]
@@ -93,13 +103,32 @@ class NeuralNet(object):
         self.biases = [b - (learnRate / len(minBat)) * db for b, db in zip(self.biases, delb)]
     def remindSGD(self):
         #Remind forgetful programmers how to train network
-        print ("<network>.stochGradDescent(self, train, epochs, minBatSize, learnRate, lmda = 0.0, test = None, monitorTrain = False, monitorTest = False)")
-    def stochGradDescent(self, train, epochs, minBatSize, learnRate, lmda = 0.0, test = None, monitorTrain = False, monitorTest = False):
+        print ("<network>.stochGradDescent(self, train, epochs, minBatSize, learnRate, lmda = 0.0, test = None, monitorTrain = False, monitorTest = False, monitorDelta = False, delay = 0.0)")
+    def stochGradDescent(self, train, epochs, minBatSize, learnRate, lmda = 0.0, test = None, monitorTrain = False, monitorTest = False, monitorDelta = False, delay = 0.0):
         #Apply gradient descent
         n = len(train)
         if test: nTest = len(test)
         trainCost, testCost = [], []
+        trainDelta, testDelta = [], []
         train2 = train
+        if len(self.trainCost) == 0:
+            if monitorTrain:
+                cost = self.totalCost(train2, lmda)
+                trainCost.append(cost)
+                if monitorDelta:
+                    delta = self.totalDelta(train2)
+                    trainDelta.append(delta)
+                    print("Initial error with training data: {}".format(delta))
+                print("Initial cost with training data: {}".format(cost))
+        if len(self.testCost) == 0:
+            if monitorTest:
+                cost = self.totalCost(test, lmda)
+                testCost.append(cost)
+                if monitorDelta:
+                    delta = self.totalDelta(test)
+                    testDelta.append(delta)
+                    print("Initial error with testing data: {}".format(delta))
+                print("Initial cost with testing data: {}".format(cost))
         for i in range(epochs):
             random.shuffle(train2)
             minBats = [train2[j:j + minBatSize] for j in range(0, n, minBatSize)]
@@ -109,25 +138,40 @@ class NeuralNet(object):
             if monitorTrain:
                 cost = self.totalCost(train2, lmda)
                 trainCost.append(cost)
+                if monitorDelta:
+                    delta = self.totalDelta(train2)
+                    trainDelta.append(delta)
+                    print("Error with training data: {}".format(delta))
                 print("Cost with training data: {}".format(cost))
             if monitorTest:
                 cost = self.totalCost(test, lmda)
                 testCost.append(cost)
+                if monitorDelta:
+                    delta = self.totalDelta(test)
+                    testDelta.append(delta)
+                    print("Error with testing data: {}".format(delta))
                 print("Cost with testing data: {}".format(cost))
             print
+            time.sleep(delay)
         self.trainCost += trainCost
         self.testCost += testCost
-        return trainCost, testCost
+        self.trainDelta += trainDelta
+        self.testDelta += testDelta
+        return trainCost, testCost, trainDelta, testDelta
     def save(self, filename):
+        #Save a neural network to a file
         data = {"sizes": self.sizes,
                 "weights": [w.tolist() for w in self.weights],
                 "biases": [b.tolist() for b in self.biases],
                 "trainCost": self.trainCost,
-                "testCost": self.testCost}
+                "testCost": self.testCost,
+                "trainDelta": [trd.tolist() for trd in self.trainDelta],
+                "testDelta": [ted.tolist() for ted in self.testDelta]}
         f = open(filename, "w")
         json.dump(data, f)
         f.close()
 def load(filename):
+    #Load a previously created neural network from a file
     f = open(filename, "r")
     data = json.load(f)
     f.close()
@@ -136,4 +180,6 @@ def load(filename):
     net.biases = [np.array(b) for b in data["biases"]]
     net.trainCost = data["trainCost"]
     net.testCost = data["testCost"]
+    net.trainDelta = [np.array(trd) for trd in data["trainDelta"]]
+    net.testDelta = [np.array(ted) for ted in data["testDelta"]]
     return net
