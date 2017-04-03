@@ -2,7 +2,7 @@
 ## 2017 WWSEF Science Fair | HAB Prediction Using Machine Learning Algorithms
 
 Describes and trains a neural network for the analysis and prediction of algal bloom data
-Copyright (C) 2017 AH Zachary Trefler and Atif Mahmud
+Copyright (C) 2017 Zachary Trefler and Atif Mahmud
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
