@@ -16,7 +16,7 @@ for i in range(n):
     line = input().split(" ")
     data.append(np.array([[float(line[i])] for i in range(0, 10)]))
 
-def sigmoid(z):
+def sigmoidd(z):
     return 1 / (1 + np.exp(-z))
 def forward(a):
     for w, b in zip(weights, biases):
