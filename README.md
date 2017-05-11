@@ -1,5 +1,5 @@
 # FlowTech | NeurAlgae
-## 2017 WWSEF Science Fair | HAB Prediction Using Machine Learning Algorithms
+## 2017 CWSF Science Fair | NeurAlgae: HAB Prediction Using Machine Learning Algorithms
 
 Describes and trains a neural network for the analysis and prediction of algal bloom data
 Copyright (C) 2017 Zachary Trefler and Atif Mahmud
