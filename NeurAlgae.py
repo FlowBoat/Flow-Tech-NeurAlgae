@@ -24,8 +24,8 @@ import numpy as np
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-from keras.layers import Input, Dense, LSTM, Dropout, regularizers
-from keras.models import Model
+from keras.layers import Dense, LSTM, Dropout, regularizers
+from keras.models import Sequential
 
 np.random.seed(16)
 
@@ -83,44 +83,37 @@ dataPDA.close()
 
 print("Creating 0-day architecture...")
 
-inputs_0 = Input(shape = (9,))
-layer1_0 = Dense(128, activation = "relu", activity_regularizer = regularizers.l2(0.0001))(inputs_0)
-drop1_0 = Dropout(0.05)(layer1_0)
-layer2_0 = Dense(128, activation = "relu", activity_regularizer = regularizers.l2(0.0001))(drop1_0)
-drop2_0 = Dropout(0.05)(layer2_0)
-layer3_0 = Dense(128, activation = "relu", activity_regularizer = regularizers.l2(0.0001))(drop2_0)
-drop3_0 = Dropout(0.05)(layer3_0)
-layer4_0 = Dense(128, activation = "relu", activity_regularizer = regularizers.l2(0.0001))(drop3_0)
-drop4_0 = Dropout(0.05)(layer4_0)
-layer5_0 = Dense(128, activation = "relu", activity_regularizer = regularizers.l2(0.0001))(drop4_0)
-drop5_0 = Dropout(0.05)(layer5_0)
-layer6_0 = Dense(128, activation = "relu", activity_regularizer = regularizers.l2(0.0001))(drop5_0)
-drop6_0 = Dropout(0.05)(layer6_0)
-layer7_0 = Dense(128, activation = "relu", activity_regularizer = regularizers.l2(0.0001))(drop6_0)
-drop7_0 = Dropout(0.05)(layer7_0)
-layer8_0 = Dense(128, activation = "relu", activity_regularizer = regularizers.l2(0.0001))(drop7_0)
-drop8_0 = Dropout(0.05)(layer8_0)
-outputs_0 = Dense(1, activation = "sigmoid")(drop8_0)
+net0 = Sequential()
+net0.add(Dense(128, input_shape = (9,), activation = "relu", activity_regularizer = regularizers.l2(0.0001)))
+net0.add(Dropout(0.05))
+net0.add(Dense(128, activation = "relu", activity_regularizer = regularizers.l2(0.0001)))
+net0.add(Dropout(0.05))
+net0.add(Dense(128, activation = "relu", activity_regularizer = regularizers.l2(0.0001)))
+net0.add(Dropout(0.05))
+net0.add(Dense(128, activation = "relu", activity_regularizer = regularizers.l2(0.0001)))
+net0.add(Dropout(0.05))
+net0.add(Dense(1, activation = "sigmoid"))
 
 print("Training 0-day PN network...")
 
-netPN_0 = Model(inputs = inputs_0, outputs = outputs_0)
+netPN_0 = net0
 netPN_0.compile(optimizer = "nadam", loss = "mean_squared_error")
-#validation_split = 0.2
-PN_0h = netPN_0.fit(x = X_0, y = PN_0, batch_size = 32, epochs = 64, verbose = 1, shuffle = True)
+PN_0h = netPN_0.fit(x = X_0, y = PN_0, batch_size = 32, epochs = 32, validation_split = 0.2, verbose = 1, shuffle = True)
 netPN_0.save_weights("Nets/v2/v2.1/netPN_0.hdf5")
+fPN_0 = open("Nets/v2/v2.1/netPN_0.json", "w")
+fPN_0.write(netPN_0.to_json())
+fPN_0.close()
 
 print("Generating 0-day PN MSEvE graph...")
 
 plt.figure(1)
 plt.subplot(311)
 plt.plot(PN_0h.history["loss"])
-#plt.plot(PN_0h.history["val_loss"])
+plt.plot(PN_0h.history["val_loss"])
 plt.title("Immediate MSE Loss vs. Training Epoch")
 plt.xlabel("Epoch")
 plt.ylabel("PN MSE Loss")
-#plt.legend(["Training loss", "Testing loss"])
-plt.legend(["Loss"])
+plt.legend(["Training loss", "Testing loss"])
 
 print("Generating 0-day PN POvT graph...")
 
@@ -138,21 +131,23 @@ plt.legend()
 
 print("Training 0-day CDA network...")
 
-netCDA_0 = Model(inputs = inputs_0, outputs = outputs_0)
+netCDA_0 = net0
 netCDA_0.compile(optimizer = "nadam", loss = "mean_squared_error")
-CDA_0h = netCDA_0.fit(x = X_0, y = CDA_0, batch_size = 32, epochs = 64, verbose = 1, shuffle = True)
+CDA_0h = netCDA_0.fit(x = X_0, y = CDA_0, batch_size = 32, epochs = 32, validation_split = 0.2, verbose = 1, shuffle = True)
 netCDA_0.save_weights("Nets/v2/v2.1/netCDA_0.hdf5")
+fCDA_0 = open("Nets/v2/v2.1/netCDA_0.json", "w")
+fCDA_0.write(netCDA_0.to_json())
+fCDA_0.close()
 
 print("Generating 0-day CDA MSEvE graph...")
 
 plt.figure(1)
 plt.subplot(312)
 plt.plot(CDA_0h.history["loss"])
-#plt.plot(CDA_0h.history["val_loss"])
+plt.plot(CDA_0h.history["val_loss"])
 plt.xlabel("Epoch")
 plt.ylabel("CDA MSE Loss")
-#plt.legend(["Training loss", "Testing loss"])
-plt.legend(["Loss"])
+plt.legend(["Training loss", "Testing loss"])
 
 print("Generating 0-day CDA POvT graph...")
 
@@ -169,21 +164,23 @@ plt.legend()
 
 print("Training 0-day PDA network...")
 
-netPDA_0 = Model(inputs = inputs_0, outputs = outputs_0)
+netPDA_0 = net0
 netPDA_0.compile(optimizer = "nadam", loss = "mean_squared_error")
-PDA_0h = netPDA_0.fit(x = X_0, y = PDA_0, batch_size = 32, epochs = 64, verbose = 1, shuffle = True)
+PDA_0h = netPDA_0.fit(x = X_0, y = PDA_0, batch_size = 32, epochs = 32, validation_split = 0.2, verbose = 1, shuffle = True)
 netPDA_0.save_weights("Nets/v2/v2.1/netPDA_0.hdf5")
+fPDA_0 = open("Nets/v2/v2.1/netPDA_0.json", "w")
+fPDA_0.write(netPDA_0.to_json())
+fPDA_0.close()
 
 print("Generating 0-day PDA MSEvE graph...")
 
 plt.figure(1)
 plt.subplot(313)
 plt.plot(PDA_0h.history["loss"])
-#plt.plot(PDA_0h.history["val_loss"])
+plt.plot(PDA_0h.history["val_loss"])
 plt.xlabel("Epoch")
 plt.ylabel("PDA MSE Loss")
-#plt.legend(["Training loss", "Testing loss"])
-plt.legend(["Loss"])
+plt.legend(["Training loss", "Testing loss"])
 plt.savefig("Plots/v2/v2.1/MSEvE_0.png")
 
 print("Generating 0-day PDA POvT graph...")
@@ -226,52 +223,52 @@ print("Creating 15-minute PN data...")
 
 PN_15 = np.zeros((len(PN_0), 1))
 for i in range(len(PN_15)):
-    PN_15[i] = PN_0[(i + 1) % len(PN_0)]
+    PN_15[i] = PN_0[(i + 2 * 1) % len(PN_0)]
 
 print("Creating 15-minute CDA data...")
 
 CDA_15 = np.zeros((len(CDA_0), 1))
 for i in range(len(CDA_15)):
-    CDA_15[i] = CDA_0[(i + 1) % len(CDA_0)]
+    CDA_15[i] = CDA_0[(i + 2 * 1) % len(CDA_0)]
 
 print("Creating 15-minute PDA data...")
 
 PDA_15 = np.zeros((len(PDA_0), 1))
 for i in range(len(PDA_15)):
-    PDA_15[i] = PDA_0[(i + 1) % len(PDA_0)]
+    PDA_15[i] = PDA_0[(i + 2 * 1) % len(PDA_0)]
 
 print("Creating 15-minute architecture...")
 
-inputs_15 = Input(shape = (1, 12))
-layer1_15 = LSTM(32, return_sequences = False)(inputs_15)
-layer2_15 = Dense(128, activation = "relu", activity_regularizer = regularizers.l2(0.0001))(layer1_15)
-drop2_15 = Dropout(0.05)(layer2_15)
-layer3_15 = Dense(128, activation = "relu", activity_regularizer = regularizers.l2(0.0001))(drop2_15)
-drop3_15 = Dropout(0.05)(layer3_15)
-layer4_15 = Dense(128, activation = "relu", activity_regularizer = regularizers.l2(0.0001))(drop3_15)
-drop4_15 = Dropout(0.05)(layer4_15)
-layer5_15 = Dense(128, activation = "relu", activity_regularizer = regularizers.l2(0.0001))(drop4_15)
-drop5_15 = Dropout(0.05)(layer5_15)
-outputs_15 = Dense(1, activation = "sigmoid")(drop5_15)
+net15 = Sequential()
+net15.add(LSTM(32, input_shape = (1, 12), return_sequences = False))
+net15.add(Dense(128, activation = "relu", activity_regularizer = regularizers.l2(0.0001)))
+net15.add(Dropout(0.05))
+net15.add(Dense(128, activation = "relu", activity_regularizer = regularizers.l2(0.0001)))
+net15.add(Dropout(0.05))
+net15.add(Dense(128, activation = "relu", activity_regularizer = regularizers.l2(0.0001)))
+net15.add(Dropout(0.05))
+net15.add(Dense(1, activation = "sigmoid"))
 
 print("Training 15-minute PN network...")
 
-netPN_15 = Model(inputs = inputs_15, outputs = outputs_15)
+netPN_15 = net15
 netPN_15.compile(optimizer = "nadam", loss = "mean_squared_error")
-PN_15h = netPN_15.fit(x = X_15, y = PN_15, batch_size = 32, epochs = 64, verbose = 1, shuffle = True)
+PN_15h = netPN_15.fit(x = X_15, y = PN_15, batch_size = 32, epochs = 32, validation_split = 0.2, verbose = 1, shuffle = True)
 netPN_15.save_weights("Nets/v2/v2.1/netPN_15.hdf5")
+fPN_15 = open("Nets/v2/v2.1/netPN_15.json", "w")
+fPN_15.write(netPN_15.to_json())
+fPN_15.close()
 
 print("Generating 15-minute PN MSEvE graph...")
 
 plt.figure(3)
 plt.subplot(311)
 plt.plot(PN_15h.history["loss"])
-#plt.plot(PN_15h.history["val_loss"])
+plt.plot(PN_15h.history["val_loss"])
 plt.title("15-min. MSE Loss vs. Training Epoch")
 plt.xlabel("Epoch")
 plt.ylabel("PN MSE Loss")
-#plt.legend(["Training loss", "Testing loss"])
-plt.legend(["Loss"])
+plt.legend(["Training loss", "Testing loss"])
 
 print("Generating 15-minute PN POvT graph...")
 
@@ -289,23 +286,25 @@ plt.legend()
 
 print("Training 15-minute CDA network...")
 
-netCDA_15 = Model(inputs = inputs_15, outputs = outputs_15)
+netCDA_15 = net15
 netCDA_15.compile(optimizer = "nadam", loss = "mean_squared_error")
-CDA_15h = netCDA_15.fit(x = X_15, y = CDA_15, batch_size = 32, epochs = 64, verbose = 1, shuffle = True)
+CDA_15h = netCDA_15.fit(x = X_15, y = CDA_15, batch_size = 32, epochs = 32, validation_split = 0.2, verbose = 1, shuffle = True)
 netCDA_15.save_weights("Nets/v2/v2.1/netCDA_15.hdf5")
+fCDA_15 = open("Nets/v2/v2.1/netCDA_15.json", "w")
+fCDA_15.write(netCDA_15.to_json())
+fCDA_15.close()
 
 print("Generating 15-minute CDA MSEvE graph...")
 
 plt.figure(3)
 plt.subplot(312)
 plt.plot(CDA_15h.history["loss"])
-#plt.plot(CDA_15h.history["val_loss"])
+plt.plot(CDA_15h.history["val_loss"])
 plt.xlabel("Epoch")
 plt.ylabel("CDA MSE Loss")
-#plt.legend(["Training loss", "Testing loss"])
-plt.legend(["Loss"])
+plt.legend(["Training loss", "Testing loss"])
 
-print("Generating 15-minute PDA POvT graph...")
+print("Generating 15-minute CDA POvT graph...")
 
 plt.figure(4)
 plt.subplot(312)
@@ -320,21 +319,23 @@ plt.legend()
 
 print("Training 15-minute PDA network...")
 
-netPDA_15 = Model(inputs = inputs_15, outputs = outputs_15)
+netPDA_15 = net15
 netPDA_15.compile(optimizer = "nadam", loss = "mean_squared_error")
-PDA_15h = netPDA_15.fit(x = X_15, y = PDA_15, batch_size = 32, epochs = 64, verbose = 1, shuffle = True)
+PDA_15h = netPDA_15.fit(x = X_15, y = PDA_15, batch_size = 32, epochs = 32, validation_split = 0.2, verbose = 1, shuffle = True)
 netPDA_15.save_weights("Nets/v2/v2.1/netPDA_15.hdf5")
+fPDA_15 = open("Nets/v2/v2.1/netPDA_15.json", "w")
+fPDA_15.write(netPDA_15.to_json())
+fPDA_15.close()
 
 print("Generating 15-minute PDA MSEvE graph...")
 
 plt.figure(3)
 plt.subplot(313)
 plt.plot(PDA_15h.history["loss"])
-#plt.plot(PDA_15h.history["val_loss"])
+plt.plot(PDA_15h.history["val_loss"])
 plt.xlabel("Epoch")
 plt.ylabel("PDA MSE Loss")
-#plt.legend(["Training loss", "Testing loss"])
-plt.legend(["Loss"])
+plt.legend(["Training loss", "Testing loss"])
 plt.savefig("Plots/v2/v2.1/MSEvE_15.png")
 
 print("Generating 15-minute PDA POvT graph...")
@@ -365,52 +366,52 @@ print("Creating 1-day PN data...")
 
 PN_1 = np.zeros((len(PN_0), 1))
 for i in range(len(PN_1)):
-    PN_1[i] = PN_0[(i + 96) % len(PN_0)]
+    PN_1[i] = PN_0[(i + 2 * 96) % len(PN_0)]
 
 print("Creating 1-day CDA data...")
 
 CDA_1 = np.zeros((len(CDA_0), 1))
 for i in range(len(CDA_1)):
-    CDA_1[i] = CDA_0[(i + 96) % len(CDA_0)]
+    CDA_1[i] = CDA_0[(i + 2 * 96) % len(CDA_0)]
 
 print("Creating 1-day PDA data...")
 
 PDA_1 = np.zeros((len(PDA_0), 1))
 for i in range(len(PDA_1)):
-    PDA_1[i] = PDA_0[(i + 96) % len(PDA_0)]
+    PDA_1[i] = PDA_0[(i + 2 * 96) % len(PDA_0)]
 
 print("Creating 1-day architecture...")
 
-inputs_1 = Input(shape = (96, 12))
-layer1_1 = LSTM(32)(inputs_1)
-layer2_1 = Dense(128, activation = "relu", activity_regularizer = regularizers.l2(0.0001))(layer1_1)
-drop2_1 = Dropout(0.05)(layer2_1)
-layer3_1 = Dense(128, activation = "relu", activity_regularizer = regularizers.l2(0.0001))(drop2_1)
-drop3_1 = Dropout(0.05)(layer3_1)
-layer4_1 = Dense(128, activation = "relu", activity_regularizer = regularizers.l2(0.0001))(drop3_1)
-drop4_1 = Dropout(0.05)(layer4_1)
-layer5_1 = Dense(128, activation = "relu", activity_regularizer = regularizers.l2(0.0001))(drop4_1)
-drop5_1 = Dropout(0.05)(layer5_1)
-outputs_1 = Dense(1, activation = "sigmoid")(drop5_1)
+net1 = Sequential()
+net1.add(LSTM(32, input_shape = (96, 12), return_sequences = False))
+net1.add(Dense(128, activation = "relu", activity_regularizer = regularizers.l2(0.0001)))
+net1.add(Dropout(0.05))
+net1.add(Dense(128, activation = "relu", activity_regularizer = regularizers.l2(0.0001)))
+net1.add(Dropout(0.05))
+net1.add(Dense(128, activation = "relu", activity_regularizer = regularizers.l2(0.0001)))
+net1.add(Dropout(0.05))
+net1.add(Dense(1, activation = "sigmoid"))
 
 print("Training 1-day PN network...")
 
-netPN_1 = Model(inputs = inputs_1, outputs = outputs_1)
+netPN_1 = net1
 netPN_1.compile(optimizer = "nadam", loss = "mean_squared_error")
-PN_1h = netPN_1.fit(x = X_1, y = PN_1, batch_size = 32, epochs = 64, verbose = 1, shuffle = True)
+PN_1h = netPN_1.fit(x = X_1, y = PN_1, batch_size = 32, epochs = 32, validation_split = 0.2, verbose = 1, shuffle = True)
 netPN_1.save_weights("Nets/v2/v2.1/netPN_1.hdf5")
+fPN_1 = open("Nets/v2/v2.1/netPN_1.json", "w")
+fPN_1.write(netPN_1.to_json())
+fPN_1.close()
 
 print("Generating 1-day PN MSEvE graph...")
 
 plt.figure(5)
 plt.subplot(311)
 plt.plot(PN_1h.history["loss"])
-#plt.plot(PN_1h.history["val_loss"])
+plt.plot(PN_1h.history["val_loss"])
 plt.title("1-day MSE Loss vs. Training Epoch")
 plt.xlabel("Epoch")
 plt.ylabel("PN MSE Loss")
-#plt.legend(["Training loss", "Testing loss"])
-plt.legend(["Loss"])
+plt.legend(["Training loss", "Testing loss"])
 
 print("Generating 1-day PN POvT graph...")
 
@@ -428,21 +429,23 @@ plt.legend()
 
 print("Training 1-day CDA network...")
 
-netCDA_1 = Model(inputs = inputs_1, outputs = outputs_1)
+netCDA_1 = net1
 netCDA_1.compile(optimizer = "nadam", loss = "mean_squared_error")
-CDA_1h = netCDA_1.fit(x = X_1, y = CDA_1, batch_size = 32, epochs = 64, verbose = 1, shuffle = True)
+CDA_1h = netCDA_1.fit(x = X_1, y = CDA_1, batch_size = 32, epochs = 32, validation_split = 0.2, verbose = 1, shuffle = True)
 netCDA_1.save_weights("Nets/v2/v2.1/netCDA_1.hdf5")
+fCDA_1 = open("Nets/v2/v2.1/netCDA_1.json", "w")
+fCDA_1.write(netCDA_1.to_json())
+fCDA_1.close()
 
 print("Generating 1-day CDA MSEvE graph...")
 
 plt.figure(5)
 plt.subplot(312)
 plt.plot(CDA_1h.history["loss"])
-#plt.plot(CDA_1h.history["val_loss"])
+plt.plot(CDA_1h.history["val_loss"])
 plt.xlabel("Epoch")
 plt.ylabel("CDA MSE Loss")
-#plt.legend(["Training loss", "Testing loss"])
-plt.legend(["Loss"])
+plt.legend(["Training loss", "Testing loss"])
 
 print("Generating 1-day CDA POvT graph...")
 
@@ -459,22 +462,24 @@ plt.legend()
 
 print("Training 1-day PDA network...")
 
-netPDA_1 = Model(inputs = inputs_1, outputs = outputs_1)
+netPDA_1 = net1
 netPDA_1.compile(optimizer = "nadam", loss = "mean_squared_error")
-PDA_1h = netPDA_1.fit(x = X_1, y = PDA_1, batch_size = 32, epochs = 64, verbose = 1, shuffle = True)
+PDA_1h = netPDA_1.fit(x = X_1, y = PDA_1, batch_size = 32, epochs = 32, validation_split = 0.2, verbose = 1, shuffle = True)
 netPDA_1.save_weights("Nets/v2/v2.1/netPDA_1.hdf5")
+fPDA_1 = open("Nets/v2/v2.1/netPDA_1.json", "w")
+fPDA_1.write(netPDA_1.to_json())
+fPDA_1.close()
 
 print("Generating 1-day PDA MSEvE graph...")
 
 plt.figure(5)
 plt.subplot(313)
 plt.plot(PDA_1h.history["loss"])
-#plt.plot(PDA_1h.history["val_loss"])
+plt.plot(PDA_1h.history["val_loss"])
 plt.xlabel("Epoch")
 plt.ylabel("PDA MSE Loss")
-#plt.legend(["Training loss", "Testing loss"])
-plt.legend(["Loss"])
-plt.savefig("Plots/v2/v2.1/MSEvE_15.png")
+plt.legend(["Training loss", "Testing loss"])
+plt.savefig("Plots/v2/v2.1/MSEvE_1.png")
 
 print("Generating 1-day PDA POvT graph...")
 
@@ -504,52 +509,52 @@ print("Creating 3-day PN data...")
 
 PN_3 = np.zeros((len(PN_0), 1))
 for i in range(len(PN_3)):
-    PN_3[i] = PN_0[(i + 288) % len(PN_0)]
+    PN_3[i] = PN_0[(i + 2 * 288) % len(PN_0)]
 
 print("Creating 3-day CDA data...")
 
 CDA_3 = np.zeros((len(CDA_0), 1))
 for i in range(len(CDA_3)):
-    CDA_3[i] = CDA_0[(i + 288) % len(CDA_0)]
+    CDA_3[i] = CDA_0[(i + 2 * 288) % len(CDA_0)]
 
 print("Creating 3-day PDA data...")
 
 PDA_3 = np.zeros((len(PDA_0), 1))
 for i in range(len(PDA_3)):
-    PDA_3[i] = PDA_0[(i + 288) % len(PDA_0)]
+    PDA_3[i] = PDA_0[(i + 2 * 288) % len(PDA_0)]
 
 print("Creating 3-day architecture...")
 
-inputs_3 = Input(shape = (288, 12))
-layer1_3 = LSTM(32)(inputs_3)
-layer2_3 = Dense(128, activation = "relu", activity_regularizer = regularizers.l2(0.0001))(layer1_3)
-drop2_3 = Dropout(0.05)(layer2_3)
-layer3_3 = Dense(128, activation = "relu", activity_regularizer = regularizers.l2(0.0001))(drop2_3)
-drop3_3 = Dropout(0.05)(layer3_3)
-layer4_3 = Dense(128, activation = "relu", activity_regularizer = regularizers.l2(0.0001))(drop3_3)
-drop4_3 = Dropout(0.05)(layer4_3)
-layer5_3 = Dense(128, activation = "relu", activity_regularizer = regularizers.l2(0.0001))(drop4_3)
-drop5_3 = Dropout(0.05)(layer5_3)
-outputs_3 = Dense(1, activation = "sigmoid")(drop5_3)
+net3 = Sequential()
+net3.add(LSTM(32, input_shape = (288, 12), return_sequences = False))
+net3.add(Dense(128, activation = "relu", activity_regularizer = regularizers.l2(0.0001)))
+net3.add(Dropout(0.05))
+net3.add(Dense(128, activation = "relu", activity_regularizer = regularizers.l2(0.0001)))
+net3.add(Dropout(0.05))
+net3.add(Dense(128, activation = "relu", activity_regularizer = regularizers.l2(0.0001)))
+net3.add(Dropout(0.05))
+net3.add(Dense(1, activation = "sigmoid"))
 
 print("Training 3-day PN network...")
 
-netPN_3 = Model(inputs = inputs_3, outputs = outputs_3)
+netPN_3 = net3
 netPN_3.compile(optimizer = "nadam", loss = "mean_squared_error")
-PN_3h = netPN_3.fit(x = X_3, y = PN_3, batch_size = 32, epochs = 64, verbose = 1, shuffle = True)
+PN_3h = netPN_3.fit(x = X_3, y = PN_3, batch_size = 32, epochs = 32, validation_split = 0.2, verbose = 1, shuffle = True)
 netPN_3.save_weights("Nets/v2/v2.1/netPN_3.hdf5")
+fPN_3 = open("Nets/v2/v2.1/netPN_3.json", "w")
+fPN_3.write(netPN_3.to_json())
+fPN_3.close()
 
 print("Generating 3-day PN MSEvE graph...")
 
 plt.figure(7)
 plt.subplot(311)
 plt.plot(PN_3h.history["loss"])
-#plt.plot(PN_3h.history["val_loss"])
+plt.plot(PN_3h.history["val_loss"])
 plt.title("3-day MSE Loss vs. Training Epoch")
 plt.xlabel("Epoch")
 plt.ylabel("PN MSE Loss")
-#plt.legend(["Training loss", "Testing loss"])
-plt.legend(["Loss"])
+plt.legend(["Training loss", "Testing loss"])
 
 print("Generating 3-day PN POvT graph...")
 
@@ -567,21 +572,23 @@ plt.legend()
 
 print("Training 3-day CDA network...")
 
-netCDA_3 = Model(inputs = inputs_3, outputs = outputs_3)
+netCDA_3 = net3
 netCDA_3.compile(optimizer = "nadam", loss = "mean_squared_error")
-CDA_3h = netCDA_3.fit(x = X_3, y = CDA_3, batch_size = 32, epochs = 64, verbose = 1, shuffle = True)
+CDA_3h = netCDA_3.fit(x = X_3, y = CDA_3, batch_size = 32, epochs = 32, validation_split = 0.2, verbose = 1, shuffle = True)
 netCDA_3.save_weights("Nets/v2/v2.1/netCDA_3.hdf5")
+fCDA_3 = open("Nets/v2/v2.1/netCDA_3.json", "w")
+fCDA_3.write(netCDA_3.to_json())
+fCDA_3.close()
 
 print("Generating 3-day CDA MSEvE graph...")
 
 plt.figure(7)
 plt.subplot(312)
 plt.plot(CDA_3h.history["loss"])
-#plt.plot(CDA_3h.history["val_loss"])
+plt.plot(CDA_3h.history["val_loss"])
 plt.xlabel("Epoch")
 plt.ylabel("CDA MSE Loss")
-#plt.legend(["Training loss", "Testing loss"])
-plt.legend(["Loss"])
+plt.legend(["Training loss", "Testing loss"])
 
 print("Generating 3-day CDA POvT graph...")
 
@@ -598,21 +605,23 @@ plt.legend()
 
 print("Training 3-day PDA network...")
 
-netPDA_3 = Model(inputs = inputs_3, outputs = outputs_3)
+netPDA_3 = net3
 netPDA_3.compile(optimizer = "nadam", loss = "mean_squared_error")
-PDA_3h = netPDA_3.fit(x = X_3, y = PDA_3, batch_size = 32, epochs = 64, verbose = 1, shuffle = True)
+PDA_3h = netPDA_3.fit(x = X_3, y = PDA_3, batch_size = 32, epochs = 32, validation_split = 0.2, verbose = 1, shuffle = True)
 netPDA_3.save_weights("Nets/v2/v2.1/netPDA_3.hdf5")
+fPDA_3 = open("Nets/v2/v2.1/netPDA_3.json", "w")
+fPDA_3.write(netPDA_3.to_json())
+fPDA_3.close()
 
 print("Generating 3-day PDA MSEvE graph...")
 
 plt.figure(7)
 plt.subplot(313)
 plt.plot(PDA_3h.history["loss"])
-#plt.plot(PDA_3h.history["val_loss"])
+plt.plot(PDA_3h.history["val_loss"])
 plt.xlabel("Epoch")
 plt.ylabel("PDA MSE Loss")
-#plt.legend(["Training loss", "Testing loss"])
-plt.legend(["Loss"])
+plt.legend(["Training loss", "Testing loss"])
 plt.savefig("Plots/v2/v2.1/MSEvE_3.png")
 
 print("Generating 3-day PDA POvT graph...")
@@ -643,52 +652,52 @@ print("Creating 7-day PN data...")
 
 PN_7 = np.zeros((len(PN_0), 1))
 for i in range(len(PN_7)):
-    PN_7[i] = PN_0[(i + 672) % len(PN_0)]
+    PN_7[i] = PN_0[(i + 2 * 672) % len(PN_0)]
 
 print("Creating 7-day CDA data...")
 
 CDA_7 = np.zeros((len(CDA_0), 1))
 for i in range(len(CDA_7)):
-    CDA_7[i] = CDA_0[(i + 672) % len(CDA_0)]
+    CDA_7[i] = CDA_0[(i + 2 * 672) % len(CDA_0)]
 
 print("Creating 7-day PDA data...")
 
 PDA_7 = np.zeros((len(PDA_0), 1))
 for i in range(len(PDA_7)):
-    PDA_7[i] = PDA_0[(i + 672) % len(PDA_0)]
+    PDA_7[i] = PDA_0[(i + 2 * 672) % len(PDA_0)]
 
 print("Creating 7-day architecture...")
 
-inputs_7 = Input(shape = (672, 12))
-layer1_7 = LSTM(32)(inputs_7)
-layer2_7 = Dense(128, activation = "relu", activity_regularizer = regularizers.l2(0.0001))(layer1_7)
-drop2_7 = Dropout(0.05)(layer2_7)
-layer3_7 = Dense(128, activation = "relu", activity_regularizer = regularizers.l2(0.0001))(drop2_7)
-drop3_7 = Dropout(0.05)(layer3_7)
-layer4_7 = Dense(128, activation = "relu", activity_regularizer = regularizers.l2(0.0001))(drop3_7)
-drop4_7 = Dropout(0.05)(layer4_7)
-layer5_7 = Dense(128, activation = "relu", activity_regularizer = regularizers.l2(0.0001))(drop4_7)
-drop5_7 = Dropout(0.05)(layer5_7)
-outputs_7 = Dense(1, activation = "sigmoid")(drop5_7)
+net7 = Sequential()
+net7.add(LSTM(32, input_shape = (672, 12), return_sequences = False))
+net7.add(Dense(128, activation = "relu", activity_regularizer = regularizers.l2(0.0001)))
+net7.add(Dropout(0.05))
+net7.add(Dense(128, activation = "relu", activity_regularizer = regularizers.l2(0.0001)))
+net7.add(Dropout(0.05))
+net7.add(Dense(128, activation = "relu", activity_regularizer = regularizers.l2(0.0001)))
+net7.add(Dropout(0.05))
+net7.add(Dense(1, activation = "sigmoid"))
 
 print("Training 7-day PN network...")
 
-netPN_7 = Model(inputs = inputs_7, outputs = outputs_7)
+netPN_7 = net7
 netPN_7.compile(optimizer = "nadam", loss = "mean_squared_error")
-PN_7h = netPN_7.fit(x = X_7, y = PN_7, batch_size = 32, epochs = 64, verbose = 1, shuffle = True)
+PN_7h = netPN_7.fit(x = X_7, y = PN_7, batch_size = 32, epochs = 32, validation_split = 0.2, verbose = 1, shuffle = True)
 netPN_7.save_weights("Nets/v2/v2.1/netPN_7.hdf5")
+fPN_7 = open("Nets/v2/v2.1/netPN_7.json", "w")
+fPN_7.write(netPN_7.to_json())
+fPN_7.close()
 
 print("Generating 7-day PN MSEvE graph...")
 
 plt.figure(9)
 plt.subplot(311)
 plt.plot(PN_7h.history["loss"])
-#plt.plot(PN_7h.history["val_loss"])
+plt.plot(PN_7h.history["val_loss"])
 plt.title("7-day MSE Loss vs. Training Epoch")
 plt.xlabel("Epoch")
 plt.ylabel("PN MSE Loss")
-#plt.legend(["Training loss", "Testing loss"])
-plt.legend(["Loss"])
+plt.legend(["Training loss", "Testing loss"])
 
 print("Generating 7-day PN POvT graph...")
 
@@ -706,21 +715,23 @@ plt.legend()
 
 print("Training 7-day CDA network...")
 
-netCDA_7 = Model(inputs = inputs_7, outputs = outputs_7)
+netCDA_7 = net7
 netCDA_7.compile(optimizer = "nadam", loss = "mean_squared_error")
-CDA_7h = netCDA_7.fit(x = X_7, y = CDA_7, batch_size = 32, epochs = 64, verbose = 1, shuffle = True)
+CDA_7h = netCDA_7.fit(x = X_7, y = CDA_7, batch_size = 32, epochs = 32, validation_split = 0.2, verbose = 1, shuffle = True)
 netCDA_7.save_weights("Nets/v2/v2.1/netCDA_7.hdf5")
+fCDA_7 = open("Nets/v2/v2.1/netCDA_7.json", "w")
+fCDA_7.write(netCDA_7.to_json())
+fCDA_7.close()
 
 print("Generating 7-day CDA MSEvE graph...")
 
 plt.figure(9)
 plt.subplot(312)
 plt.plot(CDA_7h.history["loss"])
-#plt.plot(CDA_7h.history["val_loss"])
+plt.plot(CDA_7h.history["val_loss"])
 plt.xlabel("Epoch")
 plt.ylabel("CDA MSE Loss")
-#plt.legend(["Training loss", "Testing loss"])
-plt.legend(["Loss"])
+plt.legend(["Training loss", "Testing loss"])
 
 print("Generating 7-day CDA POvT graph...")
 
@@ -737,21 +748,23 @@ plt.legend()
 
 print("Training 7-day PDA network...")
 
-netPDA_7 = Model(inputs = inputs_7, outputs = outputs_7)
+netPDA_7 = net7
 netPDA_7.compile(optimizer = "nadam", loss = "mean_squared_error")
-PDA_7h = netPDA_7.fit(x = X_7, y = PDA_7, batch_size = 32, epochs = 64, verbose = 1, shuffle = True)
+PDA_7h = netPDA_7.fit(x = X_7, y = PDA_7, batch_size = 32, epochs = 32, validation_split = 0.2, verbose = 1, shuffle = True)
 netPDA_7.save_weights("Nets/v2/v2.1/netPDA_7.hdf5")
+fPDA_7 = open("Nets/v2/v2.1/netPDA_7.json", "w")
+fPDA_7.write(netPDA_7.to_json())
+fPDA_7.close()
 
 print("Generating 7-day PDA MSEvE graph...")
 
 plt.figure(9)
 plt.subplot(313)
 plt.plot(PDA_7h.history["loss"])
-#plt.plot(PDA_7h.history["val_loss"])
+plt.plot(PDA_7h.history["val_loss"])
 plt.xlabel("Epoch")
 plt.ylabel("PDA MSE Loss")
-#plt.legend(["Training loss", "Testing loss"])
-plt.legend(["Loss"])
+plt.legend(["Training loss", "Testing loss"])
 plt.savefig("Plots/v2/v2.1/MSEvE_7.png")
 
 print("Generating 7-day PDA POvT graph...")
