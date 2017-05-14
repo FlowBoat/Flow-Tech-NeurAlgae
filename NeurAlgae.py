@@ -24,6 +24,8 @@ import numpy as np
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+#import pkg_resources
+#pkg_resources.require("keras == 1.1.0")
 from keras.layers import Dense, LSTM, Dropout, regularizers
 from keras.models import Sequential
 
@@ -86,14 +88,6 @@ print("Creating 0-day architecture...")
 net0 = Sequential()
 net0.add(Dense(128, input_shape = (9,), activation = "relu", activity_regularizer = regularizers.l2(0.0001)))
 net0.add(Dropout(0.05))
-#net0.add(Dense(128, activation = "relu", activity_regularizer = regularizers.l2(0.0001)))
-#net0.add(Dropout(0.05))
-#net0.add(Dense(128, activation = "relu", activity_regularizer = regularizers.l2(0.0001)))
-#net0.add(Dropout(0.05))
-#net0.add(Dense(128, activation = "relu", activity_regularizer = regularizers.l2(0.0001)))
-#net0.add(Dropout(0.05))
-#net0.add(Dense(128, activation = "relu", activity_regularizer = regularizers.l2(0.0001)))
-#net0.add(Dropout(0.05))
 net0.add(Dense(128, activation = "relu", activity_regularizer = regularizers.l2(0.0001)))
 net0.add(Dropout(0.05))
 net0.add(Dense(128, activation = "relu", activity_regularizer = regularizers.l2(0.0001)))
@@ -108,6 +102,9 @@ netPN_0 = net0
 netPN_0.compile(optimizer = "nadam", loss = "mean_squared_error")
 PN_0h = netPN_0.fit(x = X_0, y = PN_0, batch_size = 32, epochs = 32, validation_split = 0.2, verbose = 1, shuffle = True)
 netPN_0.save_weights("Nets/v2/v2.1/netPN_0.hdf5")
+fPN_0 = open("Nets/v2/v2.1/netPN_0.json", "w")
+fPN_0.write(netPN_0.to_json())
+fPN_0.close()
 
 print("Generating 0-day PN MSEvE graph...")
 
@@ -140,6 +137,9 @@ netCDA_0 = net0
 netCDA_0.compile(optimizer = "nadam", loss = "mean_squared_error")
 CDA_0h = netCDA_0.fit(x = X_0, y = CDA_0, batch_size = 32, epochs = 32, validation_split = 0.2, verbose = 1, shuffle = True)
 netCDA_0.save_weights("Nets/v2/v2.1/netCDA_0.hdf5")
+fCDA_0 = open("Nets/v2/v2.1/netCDA_0.json", "w")
+fCDA_0.write(netCDA_0.to_json())
+fCDA_0.close()
 
 print("Generating 0-day CDA MSEvE graph...")
 
@@ -170,6 +170,9 @@ netPDA_0 = net0
 netPDA_0.compile(optimizer = "nadam", loss = "mean_squared_error")
 PDA_0h = netPDA_0.fit(x = X_0, y = PDA_0, batch_size = 32, epochs = 32, validation_split = 0.2, verbose = 1, shuffle = True)
 netPDA_0.save_weights("Nets/v2/v2.1/netPDA_0.hdf5")
+fPDA_0 = open("Nets/v2/v2.1/netPDA_0.json", "w")
+fPDA_0.write(netPDA_0.to_json())
+fPDA_0.close()
 
 print("Generating 0-day PDA MSEvE graph...")
 
@@ -222,26 +225,24 @@ print("Creating 15-minute PN data...")
 
 PN_15 = np.zeros((len(PN_0), 1))
 for i in range(len(PN_15)):
-    PN_15[i] = PN_0[(i + 1) % len(PN_0)]
+    PN_15[i] = PN_0[(i + 2 * 1) % len(PN_0)]
 
 print("Creating 15-minute CDA data...")
 
 CDA_15 = np.zeros((len(CDA_0), 1))
 for i in range(len(CDA_15)):
-    CDA_15[i] = CDA_0[(i + 1) % len(CDA_0)]
+    CDA_15[i] = CDA_0[(i + 2 * 1) % len(CDA_0)]
 
 print("Creating 15-minute PDA data...")
 
 PDA_15 = np.zeros((len(PDA_0), 1))
 for i in range(len(PDA_15)):
-    PDA_15[i] = PDA_0[(i + 1) % len(PDA_0)]
+    PDA_15[i] = PDA_0[(i + 2 * 1) % len(PDA_0)]
 
 print("Creating 15-minute architecture...")
 
 net15 = Sequential()
 net15.add(LSTM(32, input_shape = (1, 12), return_sequences = False))
-#net15.add(Dense(128, activation = "relu", activity_regularizer = regularizers.l2(0.0001)))
-#net15.add(Dropout(0.05))
 net15.add(Dense(128, activation = "relu", activity_regularizer = regularizers.l2(0.0001)))
 net15.add(Dropout(0.05))
 net15.add(Dense(128, activation = "relu", activity_regularizer = regularizers.l2(0.0001)))
@@ -256,6 +257,9 @@ netPN_15 = net15
 netPN_15.compile(optimizer = "nadam", loss = "mean_squared_error")
 PN_15h = netPN_15.fit(x = X_15, y = PN_15, batch_size = 32, epochs = 32, validation_split = 0.2, verbose = 1, shuffle = True)
 netPN_15.save_weights("Nets/v2/v2.1/netPN_15.hdf5")
+fPN_15 = open("Nets/v2/v2.1/netPN_15.json", "w")
+fPN_15.write(netPN_15.to_json())
+fPN_15.close()
 
 print("Generating 15-minute PN MSEvE graph...")
 
@@ -288,6 +292,9 @@ netCDA_15 = net15
 netCDA_15.compile(optimizer = "nadam", loss = "mean_squared_error")
 CDA_15h = netCDA_15.fit(x = X_15, y = CDA_15, batch_size = 32, epochs = 32, validation_split = 0.2, verbose = 1, shuffle = True)
 netCDA_15.save_weights("Nets/v2/v2.1/netCDA_15.hdf5")
+fCDA_15 = open("Nets/v2/v2.1/netCDA_15.json", "w")
+fCDA_15.write(netCDA_15.to_json())
+fCDA_15.close()
 
 print("Generating 15-minute CDA MSEvE graph...")
 
@@ -318,6 +325,9 @@ netPDA_15 = net15
 netPDA_15.compile(optimizer = "nadam", loss = "mean_squared_error")
 PDA_15h = netPDA_15.fit(x = X_15, y = PDA_15, batch_size = 32, epochs = 32, validation_split = 0.2, verbose = 1, shuffle = True)
 netPDA_15.save_weights("Nets/v2/v2.1/netPDA_15.hdf5")
+fPDA_15 = open("Nets/v2/v2.1/netPDA_15.json", "w")
+fPDA_15.write(netPDA_15.to_json())
+fPDA_15.close()
 
 print("Generating 15-minute PDA MSEvE graph...")
 
@@ -358,26 +368,24 @@ print("Creating 1-day PN data...")
 
 PN_1 = np.zeros((len(PN_0), 1))
 for i in range(len(PN_1)):
-    PN_1[i] = PN_0[(i + 96) % len(PN_0)]
+    PN_1[i] = PN_0[(i + 2 * 96) % len(PN_0)]
 
 print("Creating 1-day CDA data...")
 
 CDA_1 = np.zeros((len(CDA_0), 1))
 for i in range(len(CDA_1)):
-    CDA_1[i] = CDA_0[(i + 96) % len(CDA_0)]
+    CDA_1[i] = CDA_0[(i + 2 * 96) % len(CDA_0)]
 
 print("Creating 1-day PDA data...")
 
 PDA_1 = np.zeros((len(PDA_0), 1))
 for i in range(len(PDA_1)):
-    PDA_1[i] = PDA_0[(i + 96) % len(PDA_0)]
+    PDA_1[i] = PDA_0[(i + 2 * 96) % len(PDA_0)]
 
 print("Creating 1-day architecture...")
 
 net1 = Sequential()
 net1.add(LSTM(32, input_shape = (96, 12), return_sequences = False))
-#net1.add(Dense(128, activation = "relu", activity_regularizer = regularizers.l2(0.0001)))
-#net1.add(Dropout(0.05))
 net1.add(Dense(128, activation = "relu", activity_regularizer = regularizers.l2(0.0001)))
 net1.add(Dropout(0.05))
 net1.add(Dense(128, activation = "relu", activity_regularizer = regularizers.l2(0.0001)))
@@ -392,6 +400,9 @@ netPN_1 = net1
 netPN_1.compile(optimizer = "nadam", loss = "mean_squared_error")
 PN_1h = netPN_1.fit(x = X_1, y = PN_1, batch_size = 32, epochs = 32, validation_split = 0.2, verbose = 1, shuffle = True)
 netPN_1.save_weights("Nets/v2/v2.1/netPN_1.hdf5")
+fPN_1 = open("Nets/v2/v2.1/netPN_1.json", "w")
+fPN_1.write(netPN_1.to_json())
+fPN_1.close()
 
 print("Generating 1-day PN MSEvE graph...")
 
@@ -424,6 +435,9 @@ netCDA_1 = net1
 netCDA_1.compile(optimizer = "nadam", loss = "mean_squared_error")
 CDA_1h = netCDA_1.fit(x = X_1, y = CDA_1, batch_size = 32, epochs = 32, validation_split = 0.2, verbose = 1, shuffle = True)
 netCDA_1.save_weights("Nets/v2/v2.1/netCDA_1.hdf5")
+fCDA_1 = open("Nets/v2/v2.1/netCDA_1.json", "w")
+fCDA_1.write(netCDA_1.to_json())
+fCDA_1.close()
 
 print("Generating 1-day CDA MSEvE graph...")
 
@@ -454,6 +468,9 @@ netPDA_1 = net1
 netPDA_1.compile(optimizer = "nadam", loss = "mean_squared_error")
 PDA_1h = netPDA_1.fit(x = X_1, y = PDA_1, batch_size = 32, epochs = 32, validation_split = 0.2, verbose = 1, shuffle = True)
 netPDA_1.save_weights("Nets/v2/v2.1/netPDA_1.hdf5")
+fPDA_1 = open("Nets/v2/v2.1/netPDA_1.json", "w")
+fPDA_1.write(netPDA_1.to_json())
+fPDA_1.close()
 
 print("Generating 1-day PDA MSEvE graph...")
 
@@ -494,26 +511,24 @@ print("Creating 3-day PN data...")
 
 PN_3 = np.zeros((len(PN_0), 1))
 for i in range(len(PN_3)):
-    PN_3[i] = PN_0[(i + 288) % len(PN_0)]
+    PN_3[i] = PN_0[(i + 2 * 288) % len(PN_0)]
 
 print("Creating 3-day CDA data...")
 
 CDA_3 = np.zeros((len(CDA_0), 1))
 for i in range(len(CDA_3)):
-    CDA_3[i] = CDA_0[(i + 288) % len(CDA_0)]
+    CDA_3[i] = CDA_0[(i + 2 * 288) % len(CDA_0)]
 
 print("Creating 3-day PDA data...")
 
 PDA_3 = np.zeros((len(PDA_0), 1))
 for i in range(len(PDA_3)):
-    PDA_3[i] = PDA_0[(i + 288) % len(PDA_0)]
+    PDA_3[i] = PDA_0[(i + 2 * 288) % len(PDA_0)]
 
 print("Creating 3-day architecture...")
 
 net3 = Sequential()
 net3.add(LSTM(32, input_shape = (288, 12), return_sequences = False))
-#net3.add(Dense(128, activation = "relu", activity_regularizer = regularizers.l2(0.0001)))
-#net3.add(Dropout(0.05))
 net3.add(Dense(128, activation = "relu", activity_regularizer = regularizers.l2(0.0001)))
 net3.add(Dropout(0.05))
 net3.add(Dense(128, activation = "relu", activity_regularizer = regularizers.l2(0.0001)))
@@ -528,6 +543,9 @@ netPN_3 = net3
 netPN_3.compile(optimizer = "nadam", loss = "mean_squared_error")
 PN_3h = netPN_3.fit(x = X_3, y = PN_3, batch_size = 32, epochs = 32, validation_split = 0.2, verbose = 1, shuffle = True)
 netPN_3.save_weights("Nets/v2/v2.1/netPN_3.hdf5")
+fPN_3 = open("Nets/v2/v2.1/netPN_3.json", "w")
+fPN_3.write(netPN_3.to_json())
+fPN_3.close()
 
 print("Generating 3-day PN MSEvE graph...")
 
@@ -560,6 +578,9 @@ netCDA_3 = net3
 netCDA_3.compile(optimizer = "nadam", loss = "mean_squared_error")
 CDA_3h = netCDA_3.fit(x = X_3, y = CDA_3, batch_size = 32, epochs = 32, validation_split = 0.2, verbose = 1, shuffle = True)
 netCDA_3.save_weights("Nets/v2/v2.1/netCDA_3.hdf5")
+fCDA_3 = open("Nets/v2/v2.1/netCDA_3.json", "w")
+fCDA_3.write(netCDA_3.to_json())
+fCDA_3.close()
 
 print("Generating 3-day CDA MSEvE graph...")
 
@@ -590,6 +611,9 @@ netPDA_3 = net3
 netPDA_3.compile(optimizer = "nadam", loss = "mean_squared_error")
 PDA_3h = netPDA_3.fit(x = X_3, y = PDA_3, batch_size = 32, epochs = 32, validation_split = 0.2, verbose = 1, shuffle = True)
 netPDA_3.save_weights("Nets/v2/v2.1/netPDA_3.hdf5")
+fPDA_3 = open("Nets/v2/v2.1/netPDA_3.json", "w")
+fPDA_3.write(netPDA_3.to_json())
+fPDA_3.close()
 
 print("Generating 3-day PDA MSEvE graph...")
 
@@ -630,26 +654,24 @@ print("Creating 7-day PN data...")
 
 PN_7 = np.zeros((len(PN_0), 1))
 for i in range(len(PN_7)):
-    PN_7[i] = PN_0[(i + 672) % len(PN_0)]
+    PN_7[i] = PN_0[(i + 2 * 672) % len(PN_0)]
 
 print("Creating 7-day CDA data...")
 
 CDA_7 = np.zeros((len(CDA_0), 1))
 for i in range(len(CDA_7)):
-    CDA_7[i] = CDA_0[(i + 672) % len(CDA_0)]
+    CDA_7[i] = CDA_0[(i + 2 * 672) % len(CDA_0)]
 
 print("Creating 7-day PDA data...")
 
 PDA_7 = np.zeros((len(PDA_0), 1))
 for i in range(len(PDA_7)):
-    PDA_7[i] = PDA_0[(i + 672) % len(PDA_0)]
+    PDA_7[i] = PDA_0[(i + 2 * 672) % len(PDA_0)]
 
 print("Creating 7-day architecture...")
 
 net7 = Sequential()
 net7.add(LSTM(32, input_shape = (672, 12), return_sequences = False))
-#net7.add(Dense(128, activation = "relu", activity_regularizer = regularizers.l2(0.0001)))
-#net7.add(Dropout(0.05))
 net7.add(Dense(128, activation = "relu", activity_regularizer = regularizers.l2(0.0001)))
 net7.add(Dropout(0.05))
 net7.add(Dense(128, activation = "relu", activity_regularizer = regularizers.l2(0.0001)))
@@ -664,6 +686,9 @@ netPN_7 = net7
 netPN_7.compile(optimizer = "nadam", loss = "mean_squared_error")
 PN_7h = netPN_7.fit(x = X_7, y = PN_7, batch_size = 32, epochs = 32, validation_split = 0.2, verbose = 1, shuffle = True)
 netPN_7.save_weights("Nets/v2/v2.1/netPN_7.hdf5")
+fPN_7 = open("Nets/v2/v2.1/netPN_7.json", "w")
+fPN_7.write(netPN_7.to_json())
+fPN_7.close()
 
 print("Generating 7-day PN MSEvE graph...")
 
@@ -696,6 +721,9 @@ netCDA_7 = net7
 netCDA_7.compile(optimizer = "nadam", loss = "mean_squared_error")
 CDA_7h = netCDA_7.fit(x = X_7, y = CDA_7, batch_size = 32, epochs = 32, validation_split = 0.2, verbose = 1, shuffle = True)
 netCDA_7.save_weights("Nets/v2/v2.1/netCDA_7.hdf5")
+fCDA_7 = open("Nets/v2/v2.1/netCDA_7.json", "w")
+fCDA_7.write(netCDA_7.to_json())
+fCDA_7.close()
 
 print("Generating 7-day CDA MSEvE graph...")
 
@@ -726,6 +754,9 @@ netPDA_7 = net7
 netPDA_7.compile(optimizer = "nadam", loss = "mean_squared_error")
 PDA_7h = netPDA_7.fit(x = X_7, y = PDA_7, batch_size = 32, epochs = 32, validation_split = 0.2, verbose = 1, shuffle = True)
 netPDA_7.save_weights("Nets/v2/v2.1/netPDA_7.hdf5")
+fPDA_7 = open("Nets/v2/v2.1/netPDA_7.json", "w")
+fPDA_7.write(netPDA_7.to_json())
+fPDA_7.close()
 
 print("Generating 7-day PDA MSEvE graph...")
 
