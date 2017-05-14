@@ -24,8 +24,6 @@ import numpy as np
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-#import pkg_resources
-#pkg_resources.require("keras == 1.1.0")
 from keras.layers import Dense, LSTM, Dropout, regularizers
 from keras.models import Sequential
 
